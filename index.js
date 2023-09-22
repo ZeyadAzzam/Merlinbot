@@ -48,8 +48,8 @@ console.log(`${client.user.tag}`)
  client.user.setActivity(`gg.merlin1`, { type: 'STREAMING', url: 'https://www.twitch.tv/Valorant' })  
 });
 
-
-client.login(process.env.token).catch((err) => {
+const mySecret = process.env['token']
+client.login(mySecret).catch((err) => {
    console.log(err.message)
 });
 // kill 1 ============================================
