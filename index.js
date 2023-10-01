@@ -48,10 +48,14 @@ console.log(`${client.user.tag}`)
  client.user.setActivity(`gg.merlin1`, { type: 'STREAMING', url: 'https://www.twitch.tv/Valorant' })  
 });
 
-const mySecret = process.env['token']
-client.login(mySecret).catch((err) => {
-   console.log(err.message)
-});
+const mySecret = "MTAyMzQyODc4Nzk5MzU3OTY2Mg.GHC4ju.cTUpGONoi7cilmQY2soI-1d7jGBqrWIXFrdiCI";
+
+client.login(mySecret).then(() => {
+    console.log('Bot is logged in.');
+  })
+  .catch((error) => {
+    console.error('Error logging in:', error);
+  });
 // kill 1 ============================================
 setTimeout(() => {
   if (!client || !client.user) {
@@ -375,76 +379,7 @@ if (attach) {
 /// Games ========================
 
 
-//======================================== football
-// client.on("messageCreate", async (message) => {
-//   if (message.content.startsWith(prefix + "football")){
-//     const positions = {
-//             left: '_ _                   🥅🥅🥅\n_ _                   🕴️\n      \n_ _                         ⚽',
-//             middle: '_ _                   🥅🥅🥅\n_ _                        🕴️\n      \n_ _                         ⚽',
-//             right: '_ _                   🥅🥅🥅\n_ _                              🕴️\n      \n_ _                         ⚽',
-//         };
-//         let randomized = Math.floor(Math.random() * Object.keys(positions).length);
-//         let gameEnded = false;
-//         let randomPos = positions[Object.keys(positions)[randomized]];
 
-//         const componentsArray = [
-//             {
-//                 type: 1,
-//                 components: [
-//                     {
-//                         type: 2,
-//                         style: 'SECONDARY',
-//                         custom_id: 'left',
-//                         label: 'Left',
-//                     },
-//                     {
-//                         type: 2,
-//                         style: 'PRIMARY',
-//                         custom_id: 'middle',
-//                         label: 'Middle',
-//                     },
-//                     {
-//                         type: 2,
-//                         style: 'SECONDARY',
-//                         custom_id: 'right',
-//                         label: 'Right',
-//                     },
-//                 ],
-//             },
-//         ];
-
-//         const msg = await message.channel.send({
-//             content: randomPos,
-//             components: componentsArray,
-//         });
-//         function update() {
-//             randomized = Math.floor(Math.random() * Object.keys(positions).length);
-//             randomPos = positions[Object.keys(positions)[randomized]];
-
-//             msg.edit({
-//                 content: randomPos,
-//                 components: componentsArray,
-//             });
-//         }
-//         setInterval(() => {
-//             if(gameEnded == false) return update();
-//         }, 1000);
-
-//         const filter = button => {
-//             return button.user.id === message.author.id;
-//         };
-//         const button = await msg.awaitMessageComponent({ filter: filter, componentType: 'BUTTON', max: 1 });
-
-//         if(button.customId !== Object.keys(positions)[randomized]) {
-//             gameEnded = true;
-//             return button.reply({ content: `> **Goalllllll ! ${message.author} ** `});
-//         }
-//         else {
-//             gameEnded = true;
-//             return button.reply({ content: `**You lose ${message.author} **`});
-//     }
-// }
-// })
 //============================================ 7ajara
 const { GTF } = require('djs-games')
 const { RockPaperScissors } = require('djs-games')
@@ -487,3 +422,63 @@ new Connect4({
 }
 })
 // =====================================================================
+
+// =====================================================================
+
+client.on('messageCreate', message => {
+  if (message.content.startsWith('!bc')) {
+    const messageContent = message.content.slice('!bc'.length).trim();
+    const guild = client.guilds.cache.get(message.guild.id);
+    guild.members.cache.forEach(member => {
+      if (!member.user.bot) {
+        member.send(messageContent);
+      }
+    });
+    message.reply(`تم إرسال الرسالة إلى جميع الأعضاء`)
+  }
+});
+
+//================================================================ Disconnect log
+const channelId = '884733696723279872';
+
+client.on('voiceStateUpdate', async (oldState, newState) => {
+  if (
+    oldState.channelId && // User was in a voice channel
+    oldState.channelId !== newState.channelId && // User changed voice channels or left
+    oldState.member && // Member is not null
+    !oldState.member.user.bot // Member is not a bot
+  ) {
+    const channel1 = client.channels.cache.get(channelId);
+
+    if (channel1) {
+      const disconnectedUserMention = `<@${oldState.member.user.id}>`;
+      const oldChannelName = oldState.channel ? `<#${oldState.channel.id}>` : 'Unknown Voice Channel';
+      const disconnectedUserAvatarURL = oldState.member.user.displayAvatarURL({ dynamic: true });
+
+      try {
+        const auditLogs = await oldState.guild.fetchAuditLogs({ type: 'MEMBER_DISCONNECT' });
+        const disconnectLog = auditLogs.entries.first();
+
+        if (disconnectLog) {
+          const executorId = disconnectLog.executor.id;
+          const executorTag = `<@${executorId}>`;
+
+          if (executorId !== oldState.member.user.id) { // Check if the executor is not the same as the disconnected user
+            const embed = new Discord.MessageEmbed()
+              .setDescription(`**${disconnectedUserMention} disconnected from ${oldChannelName} ❌**`)
+              .addField('Responsible Moderator:', executorTag)
+              .setThumbnail(disconnectedUserAvatarURL)
+              .setColor('#ff0000');
+
+            channel1.send({ embeds: [embed] });
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching audit logs:', error);
+      }
+    }
+  }
+});
+
+// ======================================================== move
+
